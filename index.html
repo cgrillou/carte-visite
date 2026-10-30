@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0b1220" />
+<meta name="description" content="Carte de visite numérique de Christophe GRILLOU — DSI-Inclusion. Ajoutez le contact en un geste : bouton, QR code ou carte NFC." />
+<title>Christophe GRILLOU — Carte de visite numérique</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 50% -10%, #1e2b4a 0%, #0b1220 60%) #0b1220;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 28px 16px 40px;
+  }
+  .card {
+    width: 100%;
+    max-width: 430px;
+    background: linear-gradient(180deg, rgba(30, 41, 66, .92), rgba(15, 23, 42, .95));
+    border: 1px solid rgba(148, 163, 184, .15);
+    border-radius: 24px;
+    padding: 32px 24px 20px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, .45);
+    text-align: center;
+  }
+  .avatar {
+    position: relative; overflow: hidden;
+    width: 76px; height: 76px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 800; letter-spacing: 1px; color: #fff;
+    background: linear-gradient(135deg, #06b6d4, #4f46e5);
+    box-shadow: 0 8px 24px rgba(79, 70, 229, .45);
+  }
+  .avatar img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  h1 { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: .3px; }
+  .org { margin-top: 4px; font-size: 15px; color: #7dd3fc; font-weight: 600; }
+  .tag { margin-top: 6px; font-size: 12.5px; color: #94a3b8; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border-radius: 14px; border: 1px solid rgba(148, 163, 184, .22);
+    padding: 13px 18px;
+    font-size: 15px; font-weight: 600; color: #e2e8f0;
+    background: rgba(148, 163, 184, .07);
+    text-decoration: none; cursor: pointer;
+    transition: transform .06s ease, background .15s ease;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary {
+    width: 100%;
+    margin-top: 22px;
+    padding: 16px 18px;
+    font-size: 16.5px; font-weight: 700; color: #fff;
+    background: linear-gradient(135deg, #06b6d4, #4f46e5);
+    border: none;
+    box-shadow: 0 10px 26px rgba(79, 70, 229, .4);
+  }
+  .btn-primary:hover { background: linear-gradient(135deg, #0891b2, #4338ca); }
+  .sub { margin-top: 9px; font-size: 12.5px; color: #94a3b8; }
+
+  .actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 16px; }
+  .actions .btn { padding: 11px 6px; font-size: 13.5px; flex-direction: column; gap: 4px; }
+  .actions .btn svg { width: 19px; height: 19px; }
+
+  .qr {
+    margin-top: 22px;
+    padding: 20px 16px 16px;
+    background: #ffffff;
+    border-radius: 18px;
+    color: #0f172a;
+  }
+  .qr h2 { font-size: 15px; font-weight: 800; margin-bottom: 12px; }
+  .qr #qr svg { width: 100%; max-width: 268px; height: auto; display: block; margin: 0 auto; }
+  .qr p { margin-top: 12px; font-size: 12.5px; color: #475569; line-height: 1.5; }
+
+  .help {
+    margin-top: 16px;
+    text-align: left;
+    border: 1px solid rgba(125, 211, 252, .25);
+    background: rgba(6, 182, 212, .07);
+    border-radius: 16px;
+    padding: 14px 16px;
+    font-size: 13.5px; line-height: 1.55; color: #cbd5e1;
+  }
+  .help h3 { font-size: 13.5px; color: #7dd3fc; margin-bottom: 6px; }
+  .help ol { padding-left: 20px; }
+  .help li { margin: 3px 0; }
+  .help .alt { margin-top: 8px; color: #94a3b8; font-size: 12.5px; }
+  .help.android { border-color: rgba(74, 222, 128, .25); background: rgba(74, 222, 128, .07); }
+  .help.android h3 { color: #4ade80; }
+
+  footer {
+    margin-top: 22px;
+    font-size: 11.5px;
+    color: #64748b;
+    line-height: 1.6;
+  }
+  footer strong { color: #94a3b8; }
+</style>
+</head>
+<body>
+<main class="card">
+  <header>
+    <div class="avatar" aria-hidden="true"><span id="initiales">CG</span><img src="avatar.jpg" alt="" onerror="this.remove()" /></div>
+    <h1 id="nom"></h1>
+    <p class="org" id="org"></p>
+    <p class="tag">Carte de visite numérique · NFC &amp; QR</p>
+  </header>
+
+  <button id="btn-vcard" class="btn btn-primary">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M22 11h-6"></path>
+      <path d="M19 8v6"></path>
+    </svg>
+    Ajouter à mes contacts
+  </button>
+  <p class="sub">Télécharge la fiche complète (.vcf) — Android &amp; iPhone</p>
+
+  <div class="actions">
+    <a class="btn" id="btn-tel" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      Appeler
+    </a>
+    <a class="btn" id="btn-mail" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+      E-mail
+    </a>
+    <a class="btn" id="btn-web" href="#" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      Site
+    </a>
+  </div>
+
+  <section class="qr">
+    <h2>📷 Scanner le QR code</h2>
+    <div id="qr" aria-label="QR code contenant la carte de visite"></div>
+    <p>iPhone : scannez avec l'app <strong>Appareil photo</strong> → le contact s'ajoute directement aux contacts.</p>
+  </section>
+
+  <section class="help" id="aide-ios">
+    <h3>📱 Sur iPhone — comment ajouter le contact</h3>
+    <ol>
+      <li>Appuyez sur <strong>« Ajouter à mes contacts »</strong> : le fichier <strong id="fichier">Christophe_GRILLOU.vcf</strong> se télécharge.</li>
+      <li>Touchez-le dans le bandeau en bas d'écran (ou via <strong>Fichiers › Téléchargements</strong>).</li>
+      <li>Sélectionnez <strong>« Créer un nouveau contact »</strong> → Enregistrer. Terminé !</li>
+    </ol>
+    <p class="alt">Encore plus simple : scannez le QR code ci-dessus — iOS propose l'ajout direct.</p>
+  </section>
+
+  <section class="help android">
+    <h3>🤖 Sur Android</h3>
+    <p>Le fichier .vcf s'ouvre automatiquement dans <strong>Contacts</strong> → « Enregistrer ». Ou posez simplement votre téléphone sur la carte NFC.</p>
+  </section>
+
+  <footer>
+    <strong>Sans cookie · sans traceur · 100 % statique</strong><br />
+    Fichier unique hébergeable gratuitement sur GitHub Pages<br />
+    Carte NFC : NTAG216 → cette page
+  </footer>
+</main>
+
+<script>
+/* ============================================================
+   1. CONFIGURATION — modifiez uniquement vos coordonnées ici
+   ============================================================ */
+var CARTE = {
+  prenom: "Christophe",
+  nom: "GRILLOU",
+  organisation: "DSI-Inclusion",
+  site: "http://www.dsi-inclusion.com",
+  fichier: "Christophe_GRILLOU.vcf",
+  telephones: [
+    { label: "Mobile Perso", type: "CELL,HOME",   numero: "+33 6 76 93 40 66" },
+    { label: "Tel Perso",   type: "HOME,VOICE",   numero: "+33 5 61 97 05 34" },
+    { label: "Mobile Pro",  type: "CELL,WORK",    numero: "+33 6 11 82 06 18" },
+    { label: "Tel Pro",     type: "WORK,VOICE",   numero: "+33 5 62 74 10 00" }
+  ],
+  emails: [
+    { label: "Perso", type: "HOME,INTERNET", adresse: "christophe.grillou@gmail.com" },
+    { label: "Pro",  type: "WORK,INTERNET", adresse: "Christophe.Grillou@dsi-inclusion.com" },
+    { label: "Pro",  type: "WORK,INTERNET", adresse: "Christophe.Grillou@dsi-ap.com" }
+  ],
+  adresses: [
+    { label: "Perso", type: "HOME", rue: "46 Avenue De Saint Julien", ville: "Cazères",  cp: "31220", pays: "France" },
+    { label: "Pro",   type: "WORK", rue: "7 Rue des Artisans",        ville: "Carbonne", cp: "31390", pays: "France" }
+  ]
+};
+
+/* ============================================================
+   2. GÉNÉRATEUR QR (mode binaire, correction M, versions 1–10)
+   Encodage conforme ISO/IEC 18005 — Reed-Solomon sur GF(256)
+   ============================================================ */
+var QR_EXP = new Uint8Array(512), QR_LOG = new Uint8Array(256);
+(function () {
+  var x = 1;
+  for (var i = 0; i < 255; i++) { QR_EXP[i] = x; QR_LOG[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11D; }
+  for (var j = 255; j < 512; j++) QR_EXP[j] = QR_EXP[j - 255];
+})();
+function qrMul(a, b) { return (a === 0 || b === 0) ? 0 : QR_EXP[QR_LOG[a] + QR_LOG[b]]; }
+function qrRsDivisor(deg) {
+  var r = new Array(deg); for (var i = 0; i < deg; i++) r[i] = 0;
+  r[deg - 1] = 1; var root = 1;
+  for (var k = 0; k < deg; k++) {
+    for (var j = 0; j < deg; j++) { r[j] = qrMul(r[j], root); if (j + 1 < deg) r[j] ^= r[j + 1]; }
+    root = qrMul(root, 2);
+  }
+  return r;
+}
+function qrRsRemainder(data, div) {
+  var res = []; for (var i = 0; i < div.length; i++) res.push(0);
+  for (var k = 0; k < data.length; k++) {
+    var f = data[k] ^ res.shift();
+    res.push(0);
+    if (f) for (var j = 0; j < res.length; j++) res[j] ^= qrMul(div[j], f);
+  }
+  return res;
+}
+var QR_TOTAL = [26, 44, 70, 100, 134, 172, 196, 242, 292, 346];
+var QR_ECCPB = [10, 16, 26, 18, 24, 16, 18, 22, 22, 26];
+var QR_NBLK  = [1, 1, 1, 2, 2, 4, 4, 4, 5, 5];
+var QR_ALIGN = [[], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34], [6, 22, 38], [6, 24, 42], [6, 26, 46], [6, 28, 50]];
+function qrDataCap(v) { return QR_TOTAL[v - 1] - QR_ECCPB[v - 1] * QR_NBLK[v - 1]; }
+function qrByteCap(v) { return v <= 9 ? qrDataCap(v) - 2 : qrDataCap(v) - 3; }
+function qrUtf8(s) {
+  var out = [], cp;
+  for (var i = 0; i < s.length; i++) {
+    cp = s.codePointAt(i);
+    if (cp > 0xFFFF) i++;
+    if (cp < 0x80) out.push(cp);
+    else if (cp < 0x800) out.push(0xC0 | (cp >> 6), 0x80 | (cp & 63));
+    else if (cp < 0x10000) out.push(0xE0 | (cp >> 12), 0x80 | ((cp >> 6) & 63), 0x80 | (cp & 63));
+    else out.push(0xF0 | (cp >> 18), 0x80 | ((cp >> 12) & 63), 0x80 | ((cp >> 6) & 63), 0x80 | (cp & 63));
+  }
+  return out;
+}
+function makeQr(text) {
+  var bytes = qrUtf8(text), v = 0, i, j;
+  for (i = 1; i <= 10; i++) if (bytes.length <= qrByteCap(i)) { v = i; break; }
+  if (!v) throw new Error("Texte trop long pour le QR (" + bytes.length + " octets)");
+  var size = v * 4 + 17;
+
+  var bits = [];
+  function push(val, len) { for (var b = len - 1; b >= 0; b--) bits.push((val >>> b) & 1); }
+  push(4, 4); push(bytes.length, v <= 9 ? 8 : 16);
+  for (i = 0; i < bytes.length; i++) push(bytes[i], 8);
+  var cap = qrDataCap(v) * 8;
+  push(0, Math.min(4, cap - bits.length));
+  while (bits.length % 8) bits.push(0);
+  var pad = 0xEC;
+  while (bits.length < cap) { push(pad, 8); pad = pad === 0xEC ? 0x11 : 0xEC; }
+  var dataCw = [];
+  for (i = 0; i < bits.length; i += 8) {
+    var b = 0; for (j = 0; j < 8; j++) b = (b << 1) | bits[i + j];
+    dataCw.push(b);
+  }
+
+  var nb = QR_NBLK[v - 1], epb = QR_ECCPB[v - 1], totData = qrDataCap(v);
+  var div = qrRsDivisor(epb);
+  var numShort = nb - (totData % nb), shortLen = Math.floor(totData / nb);
+  var blocks = [], off = 0;
+  for (i = 0; i < nb; i++) {
+    var len = i < numShort ? shortLen : shortLen + 1;
+    var d = dataCw.slice(off, off + len);
+    blocks.push({ data: d, ecc: qrRsRemainder(d, div) });
+    off += len;
+  }
+  var cw = [], maxLen = shortLen + 1;
+  for (i = 0; i < maxLen; i++) for (j = 0; j < blocks.length; j++) if (i < blocks[j].data.length) cw.push(blocks[j].data[i]);
+  for (i = 0; i < epb; i++) for (j = 0; j < blocks.length; j++) cw.push(blocks[j].ecc[i]);
+
+  var M = [], F = [];
+  for (i = 0; i < size; i++) { M.push([]); F.push([]); for (j = 0; j < size; j++) { M[i].push(false); F[i].push(false); } }
+  function setFn(x, y, d) { M[y][x] = d; F[y][x] = true; }
+  function finder(ox, oy) {
+    for (var dy = 0; dy <= 6; dy++) for (var dx = 0; dx <= 6; dx++)
+      setFn(ox + dx, oy + dy, Math.max(Math.abs(dx - 3), Math.abs(dy - 3)) !== 2);
+  }
+  finder(0, 0); finder(size - 7, 0); finder(0, size - 7);
+  for (i = 0; i < 8; i++) {
+    setFn(i, 7, false); setFn(7, i, false);
+    setFn(size - 1 - i, 7, false); setFn(size - 8, i, false);
+    setFn(i, size - 8, false); setFn(7, size - 1 - i, false);
+  }
+  for (i = 8; i < size - 8; i++) { setFn(i, 6, i % 2 === 0); setFn(6, i, i % 2 === 0); }
+  var coords = QR_ALIGN[v - 1];
+  if (coords.length) {
+    var last = coords[coords.length - 1];
+    for (var cy = 0; cy < coords.length; cy++) for (var cx = 0; cx < coords.length; cx++) {
+      var X = coords[cx], Y = coords[cy];
+      if ((X === 6 && Y === 6) || (X === 6 && Y === last) || (X === last && Y === 6)) continue;
+      for (var dy2 = -2; dy2 <= 2; dy2++) for (var dx2 = -2; dx2 <= 2; dx2++)
+        setFn(X + dx2, Y + dy2, Math.max(Math.abs(dx2), Math.abs(dy2)) !== 1);
+    }
+  }
+  if (v >= 7) {
+    var vrem = v;
+    for (i = 0; i < 12; i++) vrem = (vrem << 1) ^ ((vrem >>> 11) * 0x1F25);
+    var vbits = (v << 12) | vrem;
+    for (i = 0; i < 18; i++) {
+      var vb = ((vbits >>> i) & 1) !== 0, a = size - 11 + (i % 3), q = Math.floor(i / 3);
+      setFn(a, q, vb); setFn(q, a, vb);
+    }
+  }
+  function drawFormat(mask) {
+    var data = mask, rem = data;
+    for (var f = 0; f < 10; f++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+    var fb = ((data << 10) | rem) ^ 0x5412;
+    function bit(n) { return ((fb >>> n) & 1) !== 0; }
+    for (var i2 = 0; i2 <= 5; i2++) setFn(8, i2, bit(i2));
+    setFn(8, 7, bit(6)); setFn(8, 8, bit(7)); setFn(7, 8, bit(8));
+    for (var i3 = 9; i3 < 15; i3++) setFn(14 - i3, 8, bit(i3));
+    for (var i4 = 0; i4 < 8; i4++) setFn(size - 1 - i4, 8, bit(i4));
+    for (var i5 = 8; i5 < 15; i5++) setFn(8, size - 15 + i5, bit(i5));
+    setFn(8, size - 8, true);
+    return fb;
+  }
+  drawFormat(0);
+
+  var totalBits = cw.length * 8, bi = 0;
+  for (var right = size - 1; right >= 1; right -= 2) {
+    if (right === 6) right = 5;
+    for (var vert = 0; vert < size; vert++) {
+      for (var jj = 0; jj < 2; jj++) {
+        var x = right - jj, upward = ((right + 1) & 2) === 0;
+        var y = upward ? size - 1 - vert : vert;
+        if (!F[y][x] && bi < totalBits) { M[y][x] = ((cw[bi >>> 3] >>> (7 - (bi & 7))) & 1) !== 0; bi++; }
+      }
+    }
+  }
+
+  var maskFns = [
+    function (x, y) { return (x + y) % 2 === 0; },
+    function (x, y) { return y % 2 === 0; },
+    function (x, y) { return x % 3 === 0; },
+    function (x, y) { return (x + y) % 3 === 0; },
+    function (x, y) { return (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0; },
+    function (x, y) { return ((x * y) % 2) + ((x * y) % 3) === 0; },
+    function (x, y) { return (((x * y) % 2) + ((x * y) % 3)) % 2 === 0; },
+    function (x, y) { return (((x + y) % 2) + ((x * y) % 3)) % 2 === 0; }
+  ];
+  function applyMask(k) {
+    var f = maskFns[k];
+    for (var y2 = 0; y2 < size; y2++) for (var x2 = 0; x2 < size; x2++)
+      if (!F[y2][x2] && f(x2, y2)) M[y2][x2] = !M[y2][x2];
+  }
+  function penalty() {
+    var s = 0, lines = [], y3, x3;
+    for (y3 = 0; y3 < size; y3++) { var rowS = ""; for (x3 = 0; x3 < size; x3++) rowS += M[y3][x3] ? "1" : "0"; lines.push(rowS); }
+    for (x3 = 0; x3 < size; x3++) { var colS = ""; for (y3 = 0; y3 < size; y3++) colS += M[y3][x3] ? "1" : "0"; lines.push(colS); }
+    for (var li = 0; li < lines.length; li++) {
+      var l = lines[li];
+      var runs = l.match(/0{5,}|1{5,}/g) || [];
+      for (var r2 = 0; r2 < runs.length; r2++) s += 3 + runs[r2].length - 5;
+      s += 40 * (((l.match(/00001011101/g) || []).length + (l.match(/10111010000/g) || []).length));
+    }
+    for (y3 = 0; y3 < size - 1; y3++) for (x3 = 0; x3 < size - 1; x3++) {
+      var c = M[y3][x3];
+      if (M[y3][x3 + 1] === c && M[y3 + 1][x3] === c && M[y3 + 1][x3 + 1] === c) s += 3;
+    }
+    var dk = 0;
+    for (y3 = 0; y3 < size; y3++) for (x3 = 0; x3 < size; x3++) if (M[y3][x3]) dk++;
+    s += Math.ceil(Math.abs(dk / (size * size) * 20 - 10)) * 10;
+    return s;
+  }
+  var bestK = 0, bestScore = Infinity;
+  for (var k = 0; k < 8; k++) {
+    applyMask(k);
+    var sc = penalty();
+    applyMask(k);
+    if (sc < bestScore) { bestScore = sc; bestK = k; }
+  }
+  applyMask(bestK);
+  drawFormat(bestK);
+  return { M: M, size: size };
+}
+function qrSvg(M, size) {
+  var border = 4, path = "", y, x;
+  for (y = 0; y < size; y++) {
+    x = 0;
+    while (x < size) {
+      if (M[y][x]) {
+        var x0 = x;
+        while (x < size && M[y][x]) x++;
+        path += "M" + (x0 + border) + " " + (y + border) + "h" + (x - x0) + "v1h" + (-(x - x0)) + "z";
+      } else x++;
+    }
+  }
+  var dim = size + border * 2;
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + dim + " " + dim +
+    '" shape-rendering="crispEdges" role="img" aria-label="QR code : contact Christophe GRILLOU">' +
+    '<rect width="' + dim + '" height="' + dim + '" fill="#ffffff"/><path d="' + path + '" fill="#0f172a"/></svg>';
+}
+
+/* ============================================================
+   3. VCARD — fiche complète (.vcf) + fiche compacte (QR)
+   ============================================================ */
+function buildVcard(opts) {
+  var c = CARTE, i;
+  var lines = ["BEGIN:VCARD", "VERSION:3.0",
+    "N:" + c.nom + ";" + c.prenom + ";;;",
+    "FN:" + c.prenom + " " + c.nom];
+  if (opts.org && c.organisation) lines.push("ORG:" + c.organisation);
+  var nTels = Math.min(opts.tels || 0, c.telephones.length);
+  for (i = 0; i < nTels; i++) {
+    var t = c.telephones[i];
+    lines.push("TEL;TYPE=" + t.type + ":" + (opts.compact ? t.numero.replace(/\s+/g, "") : t.numero));
+  }
+  var nMails = Math.min(opts.mails || 0, c.emails.length);
+  for (i = 0; i < nMails; i++) {
+    var e = c.emails[i];
+    /* en mode compact (QR), EMAIL sans préfixe de type pour économiser la place */
+    lines.push(opts.compact ? ("EMAIL:" + e.adresse) : ("EMAIL;TYPE=" + e.type + ":" + e.adresse));
+  }
+  if (opts.url && c.site) lines.push("URL:" + c.site);
+  var nAdrs = Math.min(opts.adrs || 0, c.adresses.length);
+  for (i = 0; i < nAdrs; i++) {
+    var a = c.adresses[i];
+    lines.push("ADR;TYPE=" + a.type + ":;;" + a.rue + ";" + a.ville + ";;" + a.cp + ";" + a.pays);
+  }
+  lines.push("END:VCARD");
+  return lines.join(opts.crlf ? "\r\n" : "\n");
+}
+/* Fiche complète téléchargée : tout y est (tous les n°, e-mails, adresses) */
+var vcardFichier = buildVcard({ org: true, tels: 4, mails: 3, url: true, adrs: 2, crlf: true });
+
+function downloadVcard() {
+  var blob = new Blob([vcardFichier], { type: "text/vcard;charset=utf-8" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = CARTE.fichier;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 3000);
+}
+
+/* ============================================================
+   4. INITIALISATION DE LA PAGE
+   ============================================================ */
+(function () {
+  var c = CARTE;
+  document.getElementById("initiales").textContent = (c.prenom[0] || "") + (c.nom[0] || "");
+  document.getElementById("nom").textContent = c.prenom + " " + c.nom;
+  document.getElementById("org").textContent = c.organisation;
+  document.getElementById("fichier").textContent = c.fichier;
+
+  document.getElementById("btn-vcard").addEventListener("click", function (e) {
+    e.preventDefault();
+    downloadVcard();
+  });
+
+  /* boutons rapides : premier numéro, premier e-mail, site */
+  document.getElementById("btn-tel").href = "tel:" + c.telephones[0].numero.replace(/[^\d+]/g, "");
+  document.getElementById("btn-mail").href = "mailto:" + c.emails[0].adresse;
+  var btnWeb = document.getElementById("btn-web");
+  if (c.site) btnWeb.href = c.site; else btnWeb.style.display = "none";
+
+  /* QR : fiche la plus complète possible dans la limite des versions 1–10 */
+  var candidats = [
+    buildVcard({ org: true, tels: 1, mails: 1, compact: true }),
+    buildVcard({ tels: 1, mails: 1, compact: true }),
+    buildVcard({ tels: 1, compact: true })
+  ];
+  var qrBox = document.getElementById("qr");
+  for (var i = 0; i < candidats.length; i++) {
+    try {
+      var qr = makeQr(candidats[i]);
+      qrBox.innerHTML = qrSvg(qr.M, qr.size);
+      break;
+    } catch (e) { /* essaie la version suivante, plus courte */ }
+  }
+  if (!qrBox.innerHTML) {
+    qrBox.innerHTML = '<p style="color:#b91c1c;font-size:13px">Fiche trop longue pour le QR code.</p>';
+  }
+
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (isIOS) {
+    document.getElementById("aide-ios").style.borderColor = "rgba(125,211,252,.6)";
+    document.getElementById("aide-ios").style.background = "rgba(6,182,212,.16)";
+  }
+})();
+</script>
+</body>
+</html>
